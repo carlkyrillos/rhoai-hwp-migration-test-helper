@@ -3,6 +3,8 @@ pre-post-cluster-state/
 scripts/pre-post-cluster-state/
 pre-post-cluster-state*/
 scripts/pre-post-cluster-state*/
+pre-post-cluster-state*
+scripts/pre-post-cluster-state*
 
 # IDE files
 .vscode/
