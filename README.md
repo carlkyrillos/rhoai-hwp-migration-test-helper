@@ -61,8 +61,11 @@ These scripts provide an end-to-end workflow for testing RHOAI upgrades, particu
 
 **Usage:**
 ```bash
-./scripts/capture-cluster-state.sh
+./scripts/capture-cluster-state.sh [output-directory]
 ```
+
+**Parameters:**
+- `output-directory` (optional): Directory name where files will be saved. Default: `pre-post-cluster-state/`
 
 **Output Directory:** `pre-post-cluster-state/`
 

@@ -7,7 +7,8 @@ trap 'echo -e "\n\033[0;31m[ERROR]\033[0m Capture aborted by user"; exit 130' IN
 
 # Script to capture RHOAI cluster state before and after upgrade
 # This script captures the state of various OpenShift resources related to RHOAI
-# Usage: ./capture-cluster-state.sh
+# Usage: ./capture-cluster-state.sh [output-directory]
+#   output-directory: Optional. Directory name where files will be saved (default: pre-post-cluster-state)
 
 # Color codes for output
 RED='\033[0;31m'
@@ -27,6 +28,9 @@ log_warn() {
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
+
+# Parse command-line arguments
+OUTPUT_DIR="${1:-pre-post-cluster-state}"
 
 # Check if oc is installed and user is logged in
 if ! command -v oc &> /dev/null; then
@@ -50,7 +54,6 @@ log_info "========================================="
 echo ""
 
 # Create output directory
-OUTPUT_DIR="pre-post-cluster-state"
 if [ ! -d "$OUTPUT_DIR" ]; then
     log_info "Creating directory: $OUTPUT_DIR"
     mkdir -p "$OUTPUT_DIR"
