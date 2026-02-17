@@ -397,10 +397,10 @@ elif [ "$RHOAI_VERSION" = "3.x" ]; then
     fi
     
     # Delete DSCI
-    DSCI=$(oc get datascienceclusterinitialization -o name 2>/dev/null || true)
+    DSCI=$(oc get dscinitializations.dscinitialization.opendatahub.io -o name 2>/dev/null || true)
     if [ -n "$DSCI" ]; then
         log_info "  - Deleting DataScienceClusterInitialization..."
-        oc delete datascienceclusterinitialization --all --timeout=300s || log_warn "DSCI deletion timed out"
+        oc delete dscinitializations.dscinitialization.opendatahub.io --all --timeout=300s || log_warn "DSCI deletion timed out"
     else
         log_warn "  - No DataScienceClusterInitialization found"
     fi
@@ -410,7 +410,7 @@ elif [ "$RHOAI_VERSION" = "3.x" ]; then
     # Wait for DSC and DSCI to be fully removed
     log_info "Waiting for DataScienceCluster and DSCI to be fully deleted..."
     oc wait --for=delete datasciencecluster --all --timeout=300s 2>/dev/null || log_warn "DSC deletion wait timed out or no resources found"
-    oc wait --for=delete datascienceclusterinitialization --all --timeout=300s 2>/dev/null || log_warn "DSCI deletion wait timed out or no resources found"
+    oc wait --for=delete dscinitializations.dscinitialization.opendatahub.io --all --timeout=300s 2>/dev/null || log_warn "DSCI deletion wait timed out or no resources found"
     log_info "DSC and DSCI fully deleted"
     
     # Step 3 - Delete RHOAI operator subscription
