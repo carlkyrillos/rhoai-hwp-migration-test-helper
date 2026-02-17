@@ -27,7 +27,6 @@ metadata:
     openshift.io/display-name: notebook-with-custom-containersize
     opendatahub.io/legacy-hardware-profile-name: ''
     opendatahub.io/hardware-profile-namespace: ''
-    notebooks.opendatahub.io/last-size-selection: Small
     opendatahub.io/username: htpasswd-cluster-admin-user
     opendatahub.io/hardware-profile-name: ''
     opendatahub.io/accelerator-profile-namespace: ''

@@ -1,7 +1,7 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: kserve-sklearnserver-with-ap
+  name: kserve-sklearnserver
 spec:
   annotations:
     prometheus.kserve.io/port: '8080'
