@@ -12,6 +12,19 @@ These scripts provide an end-to-end workflow for testing RHOAI upgrades, particu
 - Logged in to an OpenShift cluster with cluster-admin privileges
 - `jq` command-line tool (required for some scripts)
 
+**GPU support (one-time):** To properly create and inject AP and deploy workloads into GPU nodes the cluster must have the NVIDIA GPU Operator installed. This is needed only once per cluster; skip if it is already set up. Run:
+
+```bash
+./scripts/setup-nvidia-gpu-operator.sh
+```
+
+Prerequisites for the GPU operator script:
+- At least one GPU-capable node in the cluster (e.g. g4dn, p3, p4, A10, V100, T4)
+- Cluster-admin permissions
+- GPU node joined to the cluster before running the script
+
+Without GPU nodes, workloads that request `nvidia.com/gpu` will remain unschedulable (Insufficient nvidia.com/gpu).
+
 ## Scripts
 
 ### 1. [setup-rhoai-2.25.sh](scripts/setup-rhoai-2.25.sh)
@@ -164,6 +177,82 @@ oc patch installplan <INSTALL_PLAN_NAME> -n redhat-ods-operator --type=merge -p 
 
 ---
 
+### 6. [delete-hanging-resources.sh](scripts/delete-hanging-resources.sh)
+
+**Purpose:** Finds resources stuck in **Terminating** after cleanup and removes their finalizers so they can be deleted. Use this when `cleanup-rhoai.sh` has run but some objects remain in Terminating state.
+
+**What it does:**
+- Scans the same resource types as in the pre/post cluster state YAMLs:
+  - Custom resources: InferenceService, ServingRuntime, Notebook, HardwareProfile, AcceleratorProfile, DataScienceCluster, DSCInitialization (2.x and 3.x)
+  - Core resources: Deployment, ReplicaSet, StatefulSet, Pod
+  - Namespaces
+- For each type, lists resources that have `metadata.deletionTimestamp` set (i.e. stuck in Terminating)
+- Patches each such resource to remove `metadata.finalizers`, allowing the API server to complete deletion
+
+**Usage:**
+```bash
+# Preview what would be patched (no changes)
+./scripts/delete-hanging-resources.sh --dry-run
+
+# Remove finalizers from hanging resources
+./scripts/delete-hanging-resources.sh
+```
+
+**Parameters:**
+- `--dry-run`: List terminating resources and show what would be patched; do not modify the cluster
+
+**When to use:** Run after `cleanup-rhoai.sh` if namespaces, CRs, or workloads remain in Terminating. Re-run the script if any resources are still stuck after the first run.
+
+**Requirements:** `oc` (logged in) and `jq`.
+
+---
+
+### 7. [setup-nvidia-gpu-operator.sh](scripts/setup-nvidia-gpu-operator.sh)
+
+**Purpose:** Sets up the NVIDIA GPU Operator on an OpenShift cluster so GPU nodes can schedule workloads that request `nvidia.com/gpu` (e.g. RHOAI Notebooks or InferenceServices using AcceleratorProfiles/HardwareProfiles with GPU).
+
+**What it does:**
+
+**Phase 1 – Node Feature Discovery (NFD):**
+- Creates namespace `openshift-nfd`
+- Installs NFD Operator from `redhat-operators` (stable channel)
+- Creates NodeFeatureDiscovery instance so nodes are labeled with hardware features (including GPU)
+
+**Phase 2 – NVIDIA GPU Operator:**
+- Creates namespace `nvidia-gpu-operator`
+- Installs NVIDIA GPU Operator from `certified-operators` (stable channel)
+
+**Phase 3 – ClusterPolicy:**
+- Creates a ClusterPolicy `gpu-cluster-policy` with:
+  - Driver enabled (using OCP driver toolkit)
+  - Toolkit, device plugin, DCGM, DCGM Exporter, GFD, MIG Manager, Node Status Exporter
+  - CDI enabled; vGPU and sandbox workloads disabled
+
+**Phase 4 – Monitoring:**
+- Waits for ClusterPolicy to reach ready state (up to ~15 minutes; driver compilation can be slow)
+
+**Phase 5 – Verification:**
+- Reports nodes with allocatable `nvidia.com/gpu`
+- Shows GPU operator pod status and troubleshooting hints if GPUs are not yet available
+
+**Prerequisites:**
+- At least one GPU-capable node (e.g. g4dn, p3, p4, A10, V100, T4) in the cluster
+- Cluster-admin permissions
+- OpenShift CLI (`oc`) installed and logged in
+
+**Usage:**
+```bash
+./scripts/setup-nvidia-gpu-operator.sh
+```
+
+**Interactive:** The script checks for GPU-capable nodes (by instance-type labels), then prompts for confirmation before installing.
+
+**Namespaces created:** `openshift-nfd`, `nvidia-gpu-operator`
+
+**Note:** This is a one-time prerequisite when testing GPU-backed resources (see [Prerequisites](#prerequisites)). Run it before creating GPU-backed Notebooks or AcceleratorProfiles if the cluster does not already have the NVIDIA GPU Operator.
+
+---
+
 ## Typical Workflow
 
 Here's a typical workflow for testing the RHOAI 2.25 to 3.3 upgrade:
@@ -202,6 +291,10 @@ Here's a typical workflow for testing the RHOAI 2.25 to 3.3 upgrade:
 9. **(Optional) Clean up when testing is complete:**
    ```bash
    ./scripts/cleanup-rhoai.sh
+   ```
+   If some resources remain in **Terminating**, run:
+   ```bash
+   ./scripts/delete-hanging-resources.sh
    ```
 
 ---
