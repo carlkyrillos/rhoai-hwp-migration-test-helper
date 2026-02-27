@@ -102,17 +102,17 @@ log_info "Detected OpenShift version: ${OCP_VERSION}"
 # Set default catalog source image based on OpenShift version
 case "$OCP_VERSION" in
     4.19)
-        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment:ocp-4.19-rhoai-3.3-216738f4c869a8178a8306d11a76b320e066317b@sha256:f3c94a10198ce8b3a6398757f30a91c60dfb2687ba27bb731c8c0f4ba7b1cba0"
+        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment@sha256:7acb7a6f757773740ce8e14f066509c6f0c62651ef9648107102776621f2468e"
         ;;
     4.20)
-        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment:ocp-4.20-rhoai-3.3-216738f4c869a8178a8306d11a76b320e066317b@sha256:266c877bd737d313c8624579bbc4b5759d8177eeb57b4684caba67fc7b05ea54"
+        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment@sha256:8b9127072aca626a19e5a16e56a710f08b0d5f799e11a0f426bb63510af62c79"
         ;;
     4.21)
-        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment:ocp-4.21-rhoai-3.3-216738f4c869a8178a8306d11a76b320e066317b@sha256:2a546c18e5310971409b55865d3bcb3f369651abe3af9a6f291f4ad0f8e9a5cf"
+        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment@sha256:3e15de392db2d782948a031f02c78e11df5dc403ed59c0d1500790f1a48e3323"
         ;;
     *)
         log_warn "Unknown OpenShift version: ${OCP_VERSION}. Using default for 4.20"
-        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment:ocp-4.20-rhoai-3.3-216738f4c869a8178a8306d11a76b320e066317b@sha256:266c877bd737d313c8624579bbc4b5759d8177eeb57b4684caba67fc7b05ea54"
+        DEFAULT_IMAGE="quay.io/rhoai/rhoai-fbc-fragment@sha256:8b9127072aca626a19e5a16e56a710f08b0d5f799e11a0f426bb63510af62c79"
         ;;
 esac
 
